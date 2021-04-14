@@ -1,5 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import axios from 'axios';
+import flushPromises from 'flush-promises'; // => npm i -D flush-promises
 Vue.use(Vuex);
 
 import { actions, mutations } from '@/store';
@@ -31,7 +33,7 @@ describe('Test actions -- store', () => {
             data = payload;
         };
 
-        actions.getAsync({ commit: mockCommit }) // "getAsync" devuelve una promeda
+        actions.getAsync({ commit: mockCommit }) // "getAsync" devuelve una promesa
             .then(() => {
                 expect(count).toBe(1);
                 expect(data).toEqual({ title: 'Mock with Jest' }); // El resultado esperado en el mock de axios.get. VER NOTA(1) ABAJO.
@@ -51,10 +53,21 @@ describe('Test actions -- store', () => {
         }); // Usamos el "getAsync" real del store, pero le pasamos un mutacion mock. Se sigue usando el mock de axios. VER NOTA(2) ABAJO.
     }); // VER EXPLICACIONES EL FICHERO "mutations.spec.js"
 
-    it('Tests using a mock axios and full store ', () => {
+    it('Tests using a mock axios and full store', () => {
         store.dispatch('getAsync')
             .then(() => expect(store.state.data).toEqual({ title: 'Mock with Jest' }));
     }); //  VER NOTA(3) ABAJO.
+
+    it('Tests using a mock axios and full store but get fails', () => {        
+        store.hotUpdate({
+            actions: { getAsync: jest.fn().mockRejectedValueOnce({ message: 'Error:' }) }
+        }); // Reemplazamos las actions "en caliente" por la action mock
+        
+        store.dispatch('getAsync')
+            .then(() => console.log('Hola, Enrique'))
+            .catch(err => expect(err).toEqual({ message: 'Error:' }));
+        // expect(store.dispatch('getAsync')).rejects.toEqual({ message: 'Error:' });
+    });
 });
 
 /* 

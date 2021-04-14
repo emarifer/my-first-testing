@@ -16,7 +16,7 @@ export const actions = {
     .then(response => {
       commit('SET_DATA', response.data);
     })
-    // .catch(err => console.log(err)); // No vamos a considerar errores.
+    .catch(err => console.log(err)); // No vamos a considerar errores.
   }
 };
 
